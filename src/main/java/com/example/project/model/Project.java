@@ -1,10 +1,16 @@
 package com.example.project.model;
 
-import jakarta.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 public class Project {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long uid;
@@ -12,14 +18,15 @@ public class Project {
     private String code;
     private String name;
     private String description;
-    private String duration;
-    private String startDate;
-    private String endDate;
+    private int duration;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project")
     private List<Task> tasks;
 
     // Getters and Setters
+
     public Long getUid() {
         return uid;
     }
@@ -52,27 +59,27 @@ public class Project {
         this.description = description;
     }
 
-    public String getDuration() {
+    public int getDuration() {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(int duration) {
         this.duration = duration;
     }
 
-    public String getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(String startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    public String getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(String endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 

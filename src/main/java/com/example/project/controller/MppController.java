@@ -13,13 +13,7 @@ public class MppController {
     private MppService mppService;
 
     @PostMapping("/upload")
-    public String uploadMppFile(@RequestParam("file") MultipartFile file) {
-        try {
-            mppService.processMppFile(file);
-            return "File processed successfully!";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Failed to process file!";
-        }
+    public void uploadMppFile(@RequestParam("file") MultipartFile file) {
+        mppService.processMppFile(file);
     }
 }

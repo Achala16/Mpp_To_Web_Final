@@ -1,6 +1,12 @@
 package com.example.project.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import java.time.LocalDateTime;
 
 @Entity
 public class Task {
@@ -13,21 +19,20 @@ public class Task {
     private String code;
     private String description;
     private int duration;
-    private String startTime;
-    private String endTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private Long predecessorId;
     private boolean complete;
     private String path;
 
     @ManyToOne
-    @JoinColumn(name = "project_id")
     private Project project;
 
     @ManyToOne
-    @JoinColumn(name = "parent_task_id")
-    private ParentTask parentTask;
+    private ParentTask parentTask;  // Add this field
 
-    // Getters and setters
+    // Getters and Setters
+
     public Long getUid() {
         return uid;
     }
@@ -68,19 +73,19 @@ public class Task {
         this.duration = duration;
     }
 
-    public String getStartTime() {
+    public LocalDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(String startTime) {
+    public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public String getEndTime() {
+    public LocalDateTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(String endTime) {
+    public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 
@@ -116,11 +121,11 @@ public class Task {
         this.project = project;
     }
 
-    public ParentTask getParentTask() {
+    public ParentTask getParentTask() {  // Add getter for ParentTask
         return parentTask;
     }
 
-    public void setParentTask(ParentTask parentTask) {
+    public void setParentTask(ParentTask parentTask) {  // Add setter for ParentTask
         this.parentTask = parentTask;
     }
 }
