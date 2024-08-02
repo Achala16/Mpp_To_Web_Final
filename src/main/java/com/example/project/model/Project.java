@@ -1,11 +1,6 @@
 package com.example.project.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import java.time.LocalDate;
+import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
@@ -15,17 +10,17 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long uid;
 
-    private String code;
     private String name;
+    private String code;
     private String description;
     private int duration;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private String startDate;
+    private String endDate;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks;
 
-    // Getters and Setters
+    // Getters and setters...
 
     public Long getUid() {
         return uid;
@@ -35,20 +30,20 @@ public class Project {
         this.uid = uid;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getDescription() {
@@ -67,19 +62,19 @@ public class Project {
         this.duration = duration;
     }
 
-    public LocalDate getStartDate() {
+    public String getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDate getEndDate() {
+    public String getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
 

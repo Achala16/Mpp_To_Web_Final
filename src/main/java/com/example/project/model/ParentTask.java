@@ -1,43 +1,37 @@
 package com.example.project.model;
 
 import jakarta.persistence.*;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 public class ParentTask {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long uid;
 
-    private String name;
+    // Other attributes...
 
     @OneToMany(mappedBy = "parentTask", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Task> childTasks;
+    private List<Task> childTasks;
 
-    // Getters and setters
+    // Getters and setters...
 
-    public Long getId() {
-        return id;
+    public Long getUid() {
+        return uid;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUid(Long uid) {
+        this.uid = uid;
     }
 
-    public String getName() {
-        return name;
-    }
+    // Other getters and setters...
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Set<Task> getChildTasks() {
+    public List<Task> getChildTasks() {
         return childTasks;
     }
 
-    public void setChildTasks(Set<Task> childTasks) {
+    public void setChildTasks(List<Task> childTasks) {
         this.childTasks = childTasks;
     }
 }

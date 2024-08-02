@@ -1,12 +1,6 @@
 package com.example.project.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
 
 @Entity
 public class Task {
@@ -19,19 +13,20 @@ public class Task {
     private String code;
     private String description;
     private int duration;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private Long predecessorId;
+    private String startTime;
+    private String endTime;
     private boolean complete;
     private String path;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_task_id")
+    private ParentTask parentTask;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
     private Project project;
 
-    @ManyToOne
-    private ParentTask parentTask;  // Add this field
-
-    // Getters and Setters
+    // Getters and setters...
 
     public Long getUid() {
         return uid;
@@ -73,28 +68,20 @@ public class Task {
         this.duration = duration;
     }
 
-    public LocalDateTime getStartTime() {
+    public String getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public String getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(String endTime) {
         this.endTime = endTime;
-    }
-
-    public Long getPredecessorId() {
-        return predecessorId;
-    }
-
-    public void setPredecessorId(Long predecessorId) {
-        this.predecessorId = predecessorId;
     }
 
     public boolean isComplete() {
@@ -113,19 +100,19 @@ public class Task {
         this.path = path;
     }
 
+    public ParentTask getParentTask() {
+        return parentTask;
+    }
+
+    public void setParentTask(ParentTask parentTask) {
+        this.parentTask = parentTask;
+    }
+
     public Project getProject() {
         return project;
     }
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public ParentTask getParentTask() {  // Add getter for ParentTask
-        return parentTask;
-    }
-
-    public void setParentTask(ParentTask parentTask) {  // Add setter for ParentTask
-        this.parentTask = parentTask;
     }
 }

@@ -1,76 +1,63 @@
 package com.example.project.service;
 
-import com.example.project.model.ParentTask;  // Import ParentTask
 import com.example.project.model.Project;
 import com.example.project.model.Task;
-import com.example.project.repository.ProjectRepository;
-import net.sf.mpxj.ProjectFile;
-import net.sf.mpxj.reader.UniversalProjectReader;
+import com.example.project.repository.TaskRepository;
+import net.sf.mpxj.*;
+import net.sf.mpxj.mpp.MPPReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
+import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
 public class MppService {
 
     @Autowired
-    private ProjectRepository projectRepository;
+    private TaskRepository taskRepository;
 
-    public MppService(ProjectRepository projectRepository) {
-        this.projectRepository = projectRepository;
-    }
+    public Project readMppFile(File mppFile) throws Exception {
+        MPPReader reader = new MPPReader();
+        ProjectFile projectFile = reader.read(mppFile);
 
-    public void processMppFile(MultipartFile file) {
-        try {
-            ProjectFile projectFile = new UniversalProjectReader().read(file.getInputStream());
+        Project project = new Project();
+        project.setName(projectFile.getProjectProperties().getProjectTitle());
+        // Set other project properties here as needed
 
-            Project project = new Project();
-            project.setName(projectFile.getProjectProperties().getProjectTitle());
+        List<Task> tasks = new ArrayList<>();
+        for (net.sf.mpxj.Task mpxTask : projectFile.getTasks()) {
+            Task task = new Task();
+            task.setName(mpxTask.getName());
 
-            List<Task> tasks = new ArrayList<>();
-            for (net.sf.mpxj.Task mpxjTask : projectFile.getTasks()) {
-                if (mpxjTask != null) {
-                    Task newTask = createTaskFromMpxjTask(mpxjTask, null, project);
-                    tasks.add(newTask);
+            // Check for null duration and handle accordingly
+            if (mpxTask.getDuration() != null) {
+                task.setDuration((int) mpxTask.getDuration().getDuration());
+            } else {
+                task.setDuration(0); // or any default value you prefer
+            }
+
+            // Set other task properties here
+
+            // Handle parent-child relationship
+            if (mpxTask.getParentTask() != null) {
+                Task parentTask = taskRepository.findById(mpxTask.getParentTask().getUniqueID().longValue()).orElse(null);
+                if (parentTask != null) {
+                    task.setParentTask(parentTask.getParentTask());
                 }
             }
-            project.setTasks(tasks);
-            projectRepository.save(project);
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            tasks.add(task);
         }
+
+        // Save project and tasks to the database
+        taskRepository.saveAll(tasks);
+
+        return project;
     }
 
-    private Task createTaskFromMpxjTask(net.sf.mpxj.Task mpxjTask, ParentTask parentTask, Project project) {
-        Task task = new Task();
-        task.setName(mpxjTask.getName());
-        task.setStartTime(LocalDateTime.parse(mpxjTask.getStart().toString()));
-        task.setEndTime(LocalDateTime.parse(mpxjTask.getFinish().toString()));
-        task.setDuration((int) mpxjTask.getDuration().getDuration());
-        task.setProject(project);
-
-        // Set parentTask in the current task
-        if (parentTask != null) {
-            task.setParentTask(parentTask);
-        }
-
-        // Create and add child tasks
-        List<Task> childTasks = new ArrayList<>();
-        for (net.sf.mpxj.Task child : mpxjTask.getChildTasks()) {
-            Task childTask = createTaskFromMpxjTask(child, task.getParentTask(), project);
-            childTasks.add(childTask);
-        }
-
-        // If the task is a parent task, create ParentTask entity
-        if (parentTask != null) {
-            parentTask.setChildTasks(new HashSet<>(childTasks));
-        }
-
-        return task;
+    public Project processMppFile(File mppFile) throws Exception {
+        return readMppFile(mppFile);
     }
 }
