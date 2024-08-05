@@ -1,7 +1,9 @@
 package com.example.project.service;
 
+import com.example.project.model.ParentTask;
 import com.example.project.model.Project;
 import com.example.project.model.Task;
+import com.example.project.repository.ParentTaskRepository;
 import com.example.project.repository.ProjectRepository;
 import com.example.project.repository.TaskRepository;
 import net.sf.mpxj.*;
@@ -10,8 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +24,9 @@ public class MppService {
 
     @Autowired
     private TaskRepository taskRepository;
+
+    @Autowired
+    private ParentTaskRepository parentTaskRepository;
 
     private static final Logger logger = Logger.getLogger(MppService.class.getName());
 
@@ -45,7 +49,34 @@ public class MppService {
         // Save project first
         project = projectRepository.save(project);
 
-        List<Task> tasks = new ArrayList<>();
+        Map<Integer, Task> taskEntityMap = new HashMap<>();
+        Map<Integer, ParentTask> parentTaskEntityMap = new HashMap<>();
+
+        // First pass: create and save all parent tasks
+        for (net.sf.mpxj.Task mpxTask : projectFile.getTasks()) {
+            if (mpxTask == null) {
+                logger.log(Level.WARNING, "Encountered null task in project file.");
+                continue;
+            }
+
+            // Check if the task has a parent task
+            net.sf.mpxj.Task parentMpxTask = mpxTask.getParentTask();
+            if (parentMpxTask != null && !parentTaskEntityMap.containsKey(parentMpxTask.getUniqueID().intValue())) {
+                ParentTask parentTask = new ParentTask();
+                parentTask.setName(parentMpxTask.getName());
+                parentTask.setDescription(parentMpxTask.getNotes());
+                parentTask.setDuration(parentMpxTask.getDuration() != null ? (int) parentMpxTask.getDuration().getDuration() : 0);
+                parentTask.setStartTime(parentMpxTask.getStart() != null ? String.valueOf(parentMpxTask.getStart().toInstant()) : null);
+                parentTask.setEndTime(parentMpxTask.getFinish() != null ? String.valueOf(parentMpxTask.getFinish().toInstant()) : null);
+                parentTask.setProject(project);
+
+                // Save the parent task and add to map
+                parentTask = parentTaskRepository.save(parentTask);
+                parentTaskEntityMap.put(parentMpxTask.getUniqueID().intValue(), parentTask);
+            }
+        }
+
+        // Second pass: create and save all tasks, linking to parent tasks if available
         for (net.sf.mpxj.Task mpxTask : projectFile.getTasks()) {
             if (mpxTask == null) {
                 logger.log(Level.WARNING, "Encountered null task in project file.");
@@ -70,24 +101,20 @@ public class MppService {
                 task.setEndTime(String.valueOf(mpxTask.getFinish().toInstant()));
             }
 
-            // Handle parent-child relationship
-            if (mpxTask.getParentTask() != null) {
-                Task parentTask = taskRepository.findById(mpxTask.getParentTask().getUniqueID().longValue()).orElse(null);
+            task.setProject(project);
+
+            // Link to parent task if available
+            net.sf.mpxj.Task parentMpxTask = mpxTask.getParentTask();
+            if (parentMpxTask != null) {
+                ParentTask parentTask = parentTaskEntityMap.get(parentMpxTask.getUniqueID().intValue());
                 if (parentTask != null) {
-                    task.setParentTask(parentTask.getParentTask());
-                } else {
-                    logger.log(Level.WARNING, "Parent task with ID {0} not found.", mpxTask.getParentTask().getUniqueID().longValue());
+                    task.setParentTask(parentTask);
                 }
             }
 
-            task.setProject(project);
-            tasks.add(task);
+            // Save the task
+            task = taskRepository.save(task);
         }
-
-        // Save tasks to the database
-        taskRepository.saveAll(tasks);
-
-        project.setTasks(tasks);
 
         return project;
     }
