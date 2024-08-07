@@ -1,16 +1,21 @@
 package com.example.project.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "tasks")
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long uid;
+    private Long id;
 
     private String name;
-    private String code;
     private String description;
     private int duration;
     private String startTime;
@@ -18,22 +23,20 @@ public class Task {
     private boolean complete;
     private String path;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_task_id")
-    private ParentTask parentTask;
+    @ManyToOne
+    private Task parentTask;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
+    @ManyToOne
     private Project project;
 
-    // Getters and setters...
+    // Getters and setters
 
-    public Long getUid() {
-        return uid;
+    public Long getId() {
+        return id;
     }
 
-    public void setUid(Long uid) {
-        this.uid = uid;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -42,14 +45,6 @@ public class Task {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public String getDescription() {
@@ -100,11 +95,11 @@ public class Task {
         this.path = path;
     }
 
-    public ParentTask getParentTask() {
+    public Task getParentTask() {
         return parentTask;
     }
 
-    public void setParentTask(ParentTask parentTask) {
+    public void setParentTask(Task parentTask) {
         this.parentTask = parentTask;
     }
 
