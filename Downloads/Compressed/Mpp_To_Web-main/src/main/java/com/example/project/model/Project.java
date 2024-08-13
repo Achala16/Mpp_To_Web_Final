@@ -1,7 +1,6 @@
 package com.example.project.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Date;
 import java.util.UUID;
@@ -11,19 +10,16 @@ public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Primary key with auto-increment
+    private Long id;
 
     @Column(length = 36, nullable = false, updatable = false, unique = true)
-    private String uid; // Unique identifier generated as a UUID
+    private String uid;
 
     private String name;
     private String description;
     private int duration;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date startDate;
-
-    @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
     private String code;

@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +37,9 @@ public class MppService {
         Project project = new Project();
         project.setName(projectFile.getProjectProperties().getProjectTitle());
         project.setDescription(projectFile.getProjectProperties().getProjectTitle());
-        project.setUid(generateUID());  // Generate a unique ID for the project
+        project.setUid(generateUID());
 
-        // Set other project properties here if needed
+        // Set project start and end dates
         if (projectFile.getProjectProperties().getStartDate() != null) {
             project.setStartDate(Date.from(projectFile.getProjectProperties().getStartDate().toInstant()));
         }
@@ -44,73 +47,73 @@ public class MppService {
             project.setEndDate(Date.from(projectFile.getProjectProperties().getFinishDate().toInstant()));
         }
 
-        // Save project first
+        // Save project
         project = projectRepository.save(project);
 
         Map<Integer, Task> taskEntityMap = new HashMap<>();
 
-        // First pass: create and save all tasks
-        for (net.sf.mpxj.Task mpxTask : projectFile.getTasks()) {  // Use net.sf.mpxj.Task directly
+        // Create and save all tasks
+        for (net.sf.mpxj.Task mpxTask : projectFile.getTasks()) {
             if (mpxTask == null) {
                 logger.log(Level.WARNING, "Encountered null task in project file.");
                 continue;
             }
 
             Task task = new Task();
-            task.setName(mpxTask.getName());
-            task.setDescription(mpxTask.getNotes());
-            task.setUid(generateUID());  // Generate a unique ID for the task
-            task.setCreatedAt(new Date());
-            task.setUpdatedAt(new Date());
+            try {
+                task.setName(mpxTask.getName());
+                task.setDescription(mpxTask.getNotes());
+                task.setUid(generateUID());
 
-            // Check for null duration and handle accordingly
-            if (mpxTask.getDuration() != null) {
-                task.setDuration((int) mpxTask.getDuration().getDuration());
-            } else {
-                task.setDuration(0); // or any default value you prefer
+                if (mpxTask.getDuration() != null) {
+                    task.setDuration((int) mpxTask.getDuration().getDuration());
+                } else {
+                    task.setDuration(0); // Default value
+                }
+
+                if (mpxTask.getStart() != null) {
+                    task.setStartTime(convertToLocalDateTime(mpxTask.getStart()));
+                }
+                if (mpxTask.getFinish() != null) {
+                    task.setEndTime(convertToLocalDateTime(mpxTask.getFinish()));
+                }
+
+                task.setProject(project);
+
+                // Set default path if it's not set
+                task.setPath(""); // Default value or can be set later
+
+                // Save the task
+                task = taskRepository.save(task);
+                taskEntityMap.put(mpxTask.getUniqueID().intValue(), task);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Error saving task: " + mpxTask.getName(), e);
             }
-
-            if (mpxTask.getStart() != null) {
-                task.setStartTime(Date.from(mpxTask.getStart().toInstant()));
-            }
-            if (mpxTask.getFinish() != null) {
-                task.setEndTime(Date.from(mpxTask.getFinish().toInstant()));
-            }
-
-            task.setProject(project);
-
-            // Save the task
-            task = taskRepository.save(task);
-            taskEntityMap.put(mpxTask.getUniqueID().intValue(), task);
         }
 
-        // Second pass: update paths for all tasks
+        // Update paths for all tasks
         for (net.sf.mpxj.Task mpxTask : projectFile.getTasks()) {
             if (mpxTask == null) {
                 continue;
             }
 
             Task task = taskEntityMap.get(mpxTask.getUniqueID().intValue());
-            if (task == null) {
-                continue;
-            }
-
-            // Link to parent task if available
-            net.sf.mpxj.Task parentMpxTask = mpxTask.getParentTask();
-            if (parentMpxTask != null) {
-                Task parentTask = taskEntityMap.get(parentMpxTask.getUniqueID().intValue());
-                if (parentTask != null) {
-                    task.setParentTask(parentTask);
-                    task.setPath(parentTask.getPath() + "." + task.getId());
-                } else {
-                    task.setPath(String.valueOf(task.getId()));
+            if (task != null) {
+                // Set path considering parent tasks
+                String parentPath = "";
+                if (mpxTask.getParentTask() != null) {
+                    Task parentTask = taskEntityMap.get(mpxTask.getParentTask().getUniqueID().intValue());
+                    if (parentTask != null) {
+                        parentPath = parentTask.getPath();
+                    }
                 }
-            } else {
-                task.setPath(String.valueOf(task.getId()));
+                task.setPath(parentPath + "/" + task.getUid());
+                try {
+                    taskRepository.save(task);
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "Error updating path for task: " + task.getName(), e);
+                }
             }
-
-            // Save the task with updated path
-            taskRepository.save(task);
         }
 
         return project;
@@ -125,8 +128,23 @@ public class MppService {
         }
     }
 
-    // Example UID generator method (can be replaced with your actual implementation)
     private String generateUID() {
         return java.util.UUID.randomUUID().toString();
+    }
+
+    // Convert java.util.Date to LocalDateTime
+    private LocalDateTime convertToLocalDateTime(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    // Convert LocalDateTime to java.util.Date
+    private Date convertToDate(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
