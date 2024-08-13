@@ -1,39 +1,48 @@
 package com.example.project.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.GenericGenerator;
+
+import java.util.Date;
 
 @Entity
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long uid;
+    private Long id;
 
     private String name;
-    private String code;
     private String description;
     private int duration;
-    private String startTime;
-    private String endTime;
-    private boolean complete;
+    private Date startTime;
+    private Date endTime;
     private String path;
+    private String uid;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "parent_task_id")
-    private ParentTask parentTask;
+    private Task parentTask;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
 
-    // Getters and setters...
+    private boolean complete; // Field to indicate if the task is complete
 
-    public Long getUid() {
-        return uid;
+    private Date createdAt;
+    private Date updatedAt;
+
+    // Getters and Setters
+
+    public Long getId() {
+        return id;
     }
 
-    public void setUid(Long uid) {
-        this.uid = uid;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -42,14 +51,6 @@ public class Task {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public String getDescription() {
@@ -68,28 +69,20 @@ public class Task {
         this.duration = duration;
     }
 
-    public String getStartTime() {
+    public Date getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(String startTime) {
+    public void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
-    public String getEndTime() {
+    public Date getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(String endTime) {
+    public void setEndTime(Date endTime) {
         this.endTime = endTime;
-    }
-
-    public boolean isComplete() {
-        return complete;
-    }
-
-    public void setComplete(boolean complete) {
-        this.complete = complete;
     }
 
     public String getPath() {
@@ -100,11 +93,19 @@ public class Task {
         this.path = path;
     }
 
-    public ParentTask getParentTask() {
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public Task getParentTask() {
         return parentTask;
     }
 
-    public void setParentTask(ParentTask parentTask) {
+    public void setParentTask(Task parentTask) {
         this.parentTask = parentTask;
     }
 
@@ -114,5 +115,29 @@ public class Task {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public boolean isComplete() {
+        return complete;
+    }
+
+    public void setComplete(boolean complete) {
+        this.complete = complete;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
