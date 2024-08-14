@@ -28,6 +28,9 @@ public class MppService {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private HelperService helperService; // Inject HelperService
+
     private static final Logger logger = Logger.getLogger(MppService.class.getName());
 
     public Project readMppFile(File mppFile) throws Exception {
@@ -63,7 +66,8 @@ public class MppService {
             try {
                 task.setName(mpxTask.getName());
                 task.setDescription(mpxTask.getNotes());
-                task.setUid(generateUID());
+                String taskUid = generateUID();
+                task.setUid(taskUid);
 
                 if (mpxTask.getDuration() != null) {
                     task.setDuration((int) mpxTask.getDuration().getDuration());
@@ -79,9 +83,6 @@ public class MppService {
                 }
 
                 task.setProject(project);
-
-                // Set default path if it's not set
-                task.setPath(""); // Default value or can be set later
 
                 // Save the task
                 task = taskRepository.save(task);
@@ -107,7 +108,13 @@ public class MppService {
                         parentPath = parentTask.getPath();
                     }
                 }
-                task.setPath(parentPath + "/" + task.getUid());
+
+                // Use HelperService to shorten both parent path and task UID
+                String shortenedParentPath = parentPath.isEmpty() ? "" : helperService.shortenedUid(parentPath);
+                String shortenedUid = helperService.shortenedUid(task.getUid());
+
+                task.setPath(shortenedParentPath.isEmpty() ? shortenedUid : shortenedParentPath + "." + shortenedUid);
+
                 try {
                     taskRepository.save(task);
                 } catch (Exception e) {
