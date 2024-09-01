@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
+@Table(name = "\"Project\"") // Wrap the table name in double quotes
 public class Project {
 
     @Id

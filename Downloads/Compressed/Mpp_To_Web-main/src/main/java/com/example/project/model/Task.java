@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "\"Task\"") // Wrap the table name in double quotes
+
 public class Task {
 
     @Id
