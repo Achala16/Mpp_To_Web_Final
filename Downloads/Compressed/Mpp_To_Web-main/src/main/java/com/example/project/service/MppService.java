@@ -82,6 +82,9 @@ public class MppService {
                     task.setEndTime(convertToLocalDateTime(mpxTask.getFinish()));
                 }
 
+                // Set the `complete` field to a default value (e.g., 0) or based on logic if available
+                task.setComplete(0); // Or adjust based on your specific logic
+
                 task.setProject(project);
 
                 // Save the task

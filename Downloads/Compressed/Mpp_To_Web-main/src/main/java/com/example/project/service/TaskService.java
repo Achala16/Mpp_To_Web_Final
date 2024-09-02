@@ -35,7 +35,7 @@ public class TaskService {
             task.setDuration(taskDetails.getDuration());
             task.setStartTime(taskDetails.getStartTime());
             task.setEndTime(taskDetails.getEndTime());
-            task.setComplete(taskDetails.isComplete());
+            task.setComplete(taskDetails.getComplete()); // Adjusted to match int type
             task.setProject(taskDetails.getProject());
 
             // Recalculate path

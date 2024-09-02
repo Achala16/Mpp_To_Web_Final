@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "\"Task\"") // Wrap the table name in double quotes
-
 public class Task {
 
     @Id
@@ -20,7 +19,9 @@ public class Task {
     private int duration;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private boolean complete;
+
+    @Column(nullable = false)
+    private int complete;  // Changed data type to int
 
     @Column(nullable = false)
     private String path = ""; // Default value to avoid null
@@ -29,7 +30,24 @@ public class Task {
     @JoinColumn(name = "project_id")
     private Project project;
 
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;  // New createdAt column
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;  // New updatedAt column
+
     // Getters and Setters
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -87,11 +105,11 @@ public class Task {
         this.endTime = endTime;
     }
 
-    public boolean isComplete() {
+    public int getComplete() {  // Changed return type to int
         return complete;
     }
 
-    public void setComplete(boolean complete) {
+    public void setComplete(int complete) {  // Changed parameter type to int
         this.complete = complete;
     }
 
@@ -109,5 +127,13 @@ public class Task {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
