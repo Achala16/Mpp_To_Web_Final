@@ -22,9 +22,10 @@ public class TaskService {
     }
 
     public Task saveTask(Task task) {
+        task = taskRepository.save(task);
         String calculatedPath = calculatePath(task);
-        task.setPath(calculatedPath);
-        return taskRepository.save(task);
+        taskRepository.updateTaskPath(calculatedPath, task.getId()); // Update path after saving
+        return task;
     }
 
     public Task updateTask(Long id, Task taskDetails) {
@@ -35,14 +36,15 @@ public class TaskService {
             task.setDuration(taskDetails.getDuration());
             task.setStartTime(taskDetails.getStartTime());
             task.setEndTime(taskDetails.getEndTime());
-            task.setComplete(taskDetails.getComplete()); // Adjusted to match int type
+            task.setComplete(taskDetails.getComplete());
             task.setProject(taskDetails.getProject());
 
-            // Recalculate path
-            String calculatedPath = calculatePath(task);
-            task.setPath(calculatedPath);
+            task = taskRepository.save(task);
 
-            return taskRepository.save(task);
+            String calculatedPath = calculatePath(task);
+            taskRepository.updateTaskPath(calculatedPath, task.getId()); // Update path after saving
+
+            return task;
         } else {
             return null;
         }
@@ -59,9 +61,6 @@ public class TaskService {
     }
 
     private String calculatePath(Task task) {
-        // Logic to build the path based on the task's UID and its ancestry
-        // Assuming no parent_task field anymore
-        // Just returning the UID for simplicity; adjust as needed
-        return task.getUid(); // Placeholder; adjust according to your hierarchy logic
+        return task.getUid();
     }
 }

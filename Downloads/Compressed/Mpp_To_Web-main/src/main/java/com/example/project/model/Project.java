@@ -1,7 +1,6 @@
 package com.example.project.model;
 
 import jakarta.persistence.*;
-
 import java.util.Date;
 import java.util.UUID;
 
@@ -20,13 +19,35 @@ public class Project {
     private String description;
     private int duration;
 
-    private Date startDate;
-    private Date endDate;
+    @Column(name = "\"startDate\"")
+    private Date startDate;  // Custom startDate column
+
+    @Column(name = "\"endDate\"")
+    private Date endDate;    // Custom endDate column
 
     private String code;
 
+    @Column(name = "\"createdAt\"", nullable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;  // New createdAt column
+
+    @Column(name = "\"updatedAt\"", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;  // New updatedAt column
+
     public Project() {
         this.uid = UUID.randomUUID().toString(); // Generate UUID
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = new Date();
     }
 
     // Getters and setters
@@ -92,5 +113,21 @@ public class Project {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

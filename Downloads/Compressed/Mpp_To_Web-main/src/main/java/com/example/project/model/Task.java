@@ -3,6 +3,7 @@ package com.example.project.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+
 @Entity
 @Table(name = "\"Task\"") // Wrap the table name in double quotes
 public class Task {
@@ -17,24 +18,28 @@ public class Task {
     private String name;
     private String description;
     private int duration;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+
+    @Column(nullable = false, name = "\"startTime\"")
+    private LocalDateTime startTime;  // Custom startTime column
+
+    @Column(nullable = false, name = "\"endTime\"")
+    private LocalDateTime endTime;    // Custom endTime column
 
     @Column(nullable = false)
     private int complete;  // Changed data type to int
 
-    @Column(nullable = false)
-    private String path = ""; // Default value to avoid null
+//    @Column(columnDefinition = "ltree", nullable = false) // Ensure this matches your DB schema
+//    private String path;
 
     @ManyToOne
-    @JoinColumn(name = "project_id")
-    private Project project;
+    @JoinColumn(name = "\"projectId\"")
+    private Project project;  // Custom projectId column
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;  // New createdAt column
+    @Column(nullable = false, updatable = false, name = "\"createdAt\"")
+    private LocalDateTime createdAt;  // Custom createdAt column
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;  // New updatedAt column
+    @Column(nullable = false, name = "\"updatedAt\"")
+    private LocalDateTime updatedAt;  // Custom updatedAt column
 
     // Getters and Setters
 
@@ -113,13 +118,13 @@ public class Task {
         this.complete = complete;
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
+//    public String getPath() {
+//        return path;
+//    }
+//
+//    public void setPath(String path) {
+//        this.path = path;
+//    }
 
     public Project getProject() {
         return project;
@@ -137,3 +142,5 @@ public class Task {
         return updatedAt;
     }
 }
+
+
