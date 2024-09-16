@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TaskService {
@@ -39,6 +40,11 @@ public class TaskService {
             task.setComplete(taskDetails.getComplete());
             task.setProject(taskDetails.getProject());
 
+            // Add the logic to update the predecessorId field
+            if (taskDetails.getPredecessorId() != null) {
+                task.setPredecessorId(taskDetails.getPredecessorId());
+            }
+
             task = taskRepository.save(task);
 
             String calculatedPath = calculatePath(task);
@@ -61,6 +67,6 @@ public class TaskService {
     }
 
     private String calculatePath(Task task) {
-        return task.getUid();
+        return task.getUid().toString(); // Use UUID for path calculation
     }
 }

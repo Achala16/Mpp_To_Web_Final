@@ -2,58 +2,53 @@ package com.example.project.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
+import java.util.UUID;
 
 @Entity
-@Table(name = "\"Task\"") // Wrap the table name in double quotes
+@Table(name = "\"Task\"") // Table name wrapped in double quotes for case sensitivity
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;  // Primary key
 
     @Column(unique = true, nullable = false)
-    private String uid;
+    private UUID uid;  // Unique identifier for the task
 
-    private String name;
-    private String description;
-    private int duration;
+    private String name;  // Task name
+    private String description;  // Task description
+
+    private int duration;  // Task duration
 
     @Column(nullable = false, name = "\"startTime\"")
-    private LocalDateTime startTime;  // Custom startTime column
+    private LocalDateTime startTime;  // Task start time, wrapped in double quotes for case sensitivity
 
     @Column(nullable = false, name = "\"endTime\"")
-    private LocalDateTime endTime;    // Custom endTime column
+    private LocalDateTime endTime;  // Task end time, wrapped in double quotes for case sensitivity
 
     @Column(nullable = false)
-    private int complete;  // Changed data type to int
-
-//    @Column(columnDefinition = "ltree", nullable = false) // Ensure this matches your DB schema
-//    private String path;
+    private int complete;  // New column to track task completeness as a percentage
 
     @ManyToOne
-    @JoinColumn(name = "\"projectId\"")
-    private Project project;  // Custom projectId column
+    @JoinColumn(name = "\"projectId\"")  // Foreign key reference to Project entity
+    private Project project;
 
     @Column(nullable = false, updatable = false, name = "\"createdAt\"")
-    private LocalDateTime createdAt;  // Custom createdAt column
+    private LocalDateTime createdAt;  // Timestamp when the task was created, cannot be updated
 
     @Column(nullable = false, name = "\"updatedAt\"")
-    private LocalDateTime updatedAt;  // Custom updatedAt column
+    private LocalDateTime updatedAt;  // Timestamp for last update to the task
 
-    // Getters and Setters
+    @Column(name = "\"predecessorId\"")
+    private Long predecessorId;  // Stores the ID of the predecessor task (nullable)
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+    @Column(name = "\"predecessorCode\"", columnDefinition = "TEXT")
+    private String predecessorCode;  // Stores predecessor code as a string (nullable)
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    // Default constructor
+    public Task() {}
 
+    // Getters and setters for all fields
     public Long getId() {
         return id;
     }
@@ -62,11 +57,11 @@ public class Task {
         this.id = id;
     }
 
-    public String getUid() {
+    public UUID getUid() {
         return uid;
     }
 
-    public void setUid(String uid) {
+    public void setUid(UUID uid) {
         this.uid = uid;
     }
 
@@ -110,21 +105,13 @@ public class Task {
         this.endTime = endTime;
     }
 
-    public int getComplete() {  // Changed return type to int
+    public int getComplete() {
         return complete;
     }
 
-    public void setComplete(int complete) {  // Changed parameter type to int
+    public void setComplete(int complete) {
         this.complete = complete;
     }
-
-//    public String getPath() {
-//        return path;
-//    }
-//
-//    public void setPath(String path) {
-//        this.path = path;
-//    }
 
     public Project getProject() {
         return project;
@@ -138,9 +125,43 @@ public class Task {
         return createdAt;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Long getPredecessorId() {
+        return predecessorId;
+    }
+
+    public void setPredecessorId(Long predecessorId) {
+        this.predecessorId = predecessorId;
+    }
+
+    public String getPredecessorCode() {
+        return predecessorCode;
+    }
+
+    public void setPredecessorCode(String predecessorCode) {
+        this.predecessorCode = predecessorCode;
+    }
+
+    // Auto-setting timestamps
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
-
-

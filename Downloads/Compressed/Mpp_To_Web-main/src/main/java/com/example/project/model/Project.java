@@ -12,8 +12,8 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 36, nullable = false, updatable = false, unique = true)
-    private String uid;
+    @Column(nullable = false, updatable = false, unique = true)
+    private UUID uid;  // Changed to UUID
 
     private String name;
     private String description;
@@ -36,7 +36,7 @@ public class Project {
     private Date updatedAt;  // New updatedAt column
 
     public Project() {
-        this.uid = UUID.randomUUID().toString(); // Generate UUID
+        this.uid = UUID.randomUUID(); // Generate UUID
     }
 
     @PrePersist
@@ -50,7 +50,8 @@ public class Project {
         this.updatedAt = new Date();
     }
 
-    // Getters and setters
+    // Getters and Setters
+
     public Long getId() {
         return id;
     }
@@ -59,11 +60,11 @@ public class Project {
         this.id = id;
     }
 
-    public String getUid() {
+    public UUID getUid() {  // Changed return type to UUID
         return uid;
     }
 
-    public void setUid(String uid) {
+    public void setUid(UUID uid) {  // Changed parameter type to UUID
         this.uid = uid;
     }
 
